@@ -1,0 +1,22 @@
+{
+  "name": "webgl-initial",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joshromanrogers/webgl-practice.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/joshromanrogers/webgl-practice/issues"
+  },
+  "homepage": "https://github.com/joshromanrogers/webgl-practice#readme",
+  "dependencies": {
+    "gl-matrix": "^2.8.1"
+  }
+}
