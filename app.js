@@ -163,7 +163,7 @@ InitDemo = () => {
     // lookAt(out, eye, center, up)
     glm.mat4.lookAt(viewMatrix, [0, 0, -5], [0, 0, 0], [0, 1, 0]);
     // perspective(out, fovy, aspect, near, far)
-    glm.mat4.perspective(projMatrix, glMatrix.toRadian(45), canvas.width / canvas.height, 0.1, 1000.0);
+    glm.mat4.perspective(projMatrix, glm.glMatrix.toRadian(45), canvas.width / canvas.height, 0.1, 1000.0);
 
     // now send the above matrices over to the shader
     gl.uniformMatrix4fv(matWorldUniformLocation, gl.FALSE, worldMatrix);
