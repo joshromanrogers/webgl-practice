@@ -54,6 +54,14 @@ InitDemo = () => {
     // depth buffer - stores the depth of the pixels in the screen (z value)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+    // only draw on rasterisation if closer to the camera than other element [front of box, not back]
+    gl.enable(gl.DEPTH_TEST);
+
+    // only compute visibile faces
+    gl.enable(gl.CULL_FACE);
+    gl.frontFace(gl.CCW);
+    gl.cullFace(gl.BACK);
+
     // create new shader objects
     let vertexShader = gl.createShader(gl.VERTEX_SHADER);
     let fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
@@ -239,6 +247,8 @@ InitDemo = () => {
     gl.uniformMatrix4fv(matViewUniformLocation, gl.FALSE, viewMatrix);
     gl.uniformMatrix4fv(matProjUniformLocation, gl.FALSE, projMatrix);
 
+    let xRotationMatrix = new Float32Array(16);
+    let yRotationMatrix = new Float32Array(16);
 
 
     //
@@ -254,7 +264,9 @@ InitDemo = () => {
         angle = performance.now() / 1000 / 6 * 2 * Math.PI;
 
         // rotate(output, original matrix, angle degrees, axis)
-        glm.mat4.rotate(worldMatrix, identityMatrix, angle, [0, 1, 0]);
+        glm.mat4.rotate(yRotationMatrix, identityMatrix, angle, [0, 1, 0]);
+        glm.mat4.rotate(xRotationMatrix, identityMatrix, angle / 4, [1, 0, 0]);
+        glm.mat4.mul(worldMatrix, xRotationMatrix, yRotationMatrix);
 
         // update worldMatrix [send to shader]
         gl.uniformMatrix4fv(matWorldUniformLocation, gl.FALSE, worldMatrix);
