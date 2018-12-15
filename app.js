@@ -1,3 +1,5 @@
+var glm = require('gl-matrix');
+
 var vertexShaderText = 
 [
 // level of quality = medium
@@ -173,9 +175,35 @@ InitDemo = () => {
 
 
     //
-    // main render loop
+    // main render loop (changes the world for whatever gets drawn, for us: rotation)
     //
+    // get an indentity matrix
+    let identityMatrix = new Float32Array(16);
+    glm.mat4.identity(identityMatrix);
+    let angle = 0;
+    loop = () => {
+        // full rotation every 6 seconds
+        // performance.now() returned value represents time elapsed since time origin
+        angle = performance.now() / 1000 / 6 * 2 * Math.PI;
 
-    // draw arrays (draw in triangles, how many vertices to skip, how many vertices to draw)
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
+        // rotate(output, original matrix, angle degrees, axis)
+        glm.mat4.rotate(worldMatrix, identityMatrix, angle, [0, 1, 0]);
+
+        // update worldMatrix [send to shader]
+        gl.uniformMatrix4fv(matWorldUniformLocation, gl.FALSE, worldMatrix);
+
+        // clear screen, erase everything from previous frame
+        gl.clearColor(0.75, 0.85, 0.8, 1.0);
+        gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+        
+        // draw arrays (draw in triangles, how many vertices to skip, how many vertices to draw)
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+        // whatever function is on the inside here, call that function whenever the screen is ready to draw
+        // a new image (~1/60 s)
+        // will not call function if tab looses focus, great for power saving.
+        requestAnimationFrame(loop);
+        
+    };
+    requestAnimationFrame(loop);
 }
