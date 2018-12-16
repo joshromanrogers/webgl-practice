@@ -180,9 +180,9 @@ InitDemo = () => {
 
 
     // chunk of memory on the GPU that we're ready to use
-    let triangleVertexBufferObject = gl.createBuffer();
+    let boxVertexBufferObject = gl.createBuffer();
     // binding this buffer to be the active buffer
-    gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexBufferObject);
+    gl.bindBuffer(gl.ARRAY_BUFFER, boxVertexBufferObject);
     // specify data on active buffer (type of buffer we are talking about, vertices to use, 
     // sending information from CPU to GPU memory once)
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(boxVertices), gl.STATIC_DRAW);
@@ -190,13 +190,14 @@ InitDemo = () => {
     // introduce indices buffer to compliment vertex buffer [order triangles should be drawn]
     let boxIndexBufferObject = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, boxIndexBufferObject);
+    // specify the data
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(boxIndices), gl.STATIC_DRAW);
 
     // now need to inform the vertex shader that the attribute vertPosition is the triangleVertices pairs
 
     // get a handle to the attributes (in vertex shader)
-    var positionAttribLocation = gl.getAttribLocation(program, 'vertPosition');
-    var texCoordAttribLocation = gl.getAttribLocation(program, 'vertTexCoord');
+    let positionAttribLocation = gl.getAttribLocation(program, 'vertPosition');
+    let texCoordAttribLocation = gl.getAttribLocation(program, 'vertTexCoord');
 
     // specify the layout of the attributes
     gl.vertexAttribPointer(
@@ -210,16 +211,16 @@ InitDemo = () => {
 
     gl.vertexAttribPointer(
         texCoordAttribLocation, // Attribute location
-        3, // Number of elements per attribute
+        2, // Number of elements per attribute
         gl.FLOAT, // type of elements
         gl.FALSE,
         5 * Float32Array.BYTES_PER_ELEMENT, // size of an individual vertex
-        3 * Float32Array.BYTES_PER_ELEMENT, // SKIPS THE X + Y VERTICES AND JUST USES THE RGBS
+        3 * Float32Array.BYTES_PER_ELEMENT, // offset from beginning
     );
 
     // enable attribute for use
     gl.enableVertexAttribArray(positionAttribLocation);
-    gl.enableVertexAttribArray(colorAttribLocation);
+    gl.enableVertexAttribArray(texCoordAttribLocation);
 
     //
     // Create texture
@@ -230,19 +231,23 @@ InitDemo = () => {
 
     // set texture parameters for wrapping and filtering [all done on texture but can be changed later
     // on render loop]
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EGDE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EGDE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     // distant object
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     // close up object
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-    // add information
+    // to specify what information the texture is going to use
 
-
+    gl.texImage2D(
+		gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,
+		gl.UNSIGNED_BYTE,
+		document.getElementById('box-image')
+	);
 
     // unbind buffers after we load them in
-    gl.bindTexture(gl.TEXTURE_2D, null)
+    gl.bindTexture(gl.TEXTURE_2D, null);
 
     // Tell OpenGL state machine which program should be active [specifiy which program to use]
     gl.useProgram(program);
@@ -300,6 +305,11 @@ InitDemo = () => {
         // clear screen, erase everything from previous frame
         gl.clearColor(0.75, 0.85, 0.8, 1.0);
         gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+
+        // bind texture values
+        gl.bindTexture(gl.TEXTURE_2D, boxTexture);
+        // whatever texture is active, I want to bind it to the zeroth sampler slot
+        gl.activeTexture(gl.TEXTURE0);
         
         // draw arrays (draw in triangles, how many vertices to skip, how many vertices to draw)
         gl.drawElements(gl.TRIANGLES, boxIndices.length, gl.UNSIGNED_SHORT, 0);
