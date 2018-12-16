@@ -112,42 +112,42 @@ InitDemo = () => {
 
     // vertices of the triangle on the CPU
     let boxVertices = [
-      // X, Y, Z           R, G, B
+      // X, Y, Z           U, V  {{[[mind jog for UV coords = https://i.stack.imgur.com/nMrVF.png]]}}
          // Top
-		-1.0, 1.0, -1.0,   0.5, 0.5, 0.5,
-		-1.0, 1.0, 1.0,    0.5, 0.5, 0.5,
-		1.0, 1.0, 1.0,     0.5, 0.5, 0.5,
-		1.0, 1.0, -1.0,    0.5, 0.5, 0.5,
+		-1.0, 1.0, -1.0,   0, 0,
+		-1.0, 1.0, 1.0,    0, 1,
+		1.0, 1.0, 1.0,     1, 1,
+		1.0, 1.0, -1.0,    1, 0,
 
 		// Left
-		-1.0, 1.0, 1.0,    0.75, 0.25, 0.5,
-		-1.0, -1.0, 1.0,   0.75, 0.25, 0.5,
-		-1.0, -1.0, -1.0,  0.75, 0.25, 0.5,
-		-1.0, 1.0, -1.0,   0.75, 0.25, 0.5,
+		-1.0, 1.0, 1.0,    0, 0,
+		-1.0, -1.0, 1.0,   1, 0,
+		-1.0, -1.0, -1.0,  1, 1,
+		-1.0, 1.0, -1.0,   0, 1,
 
 		// Right
-		1.0, 1.0, 1.0,    0.25, 0.25, 0.75,
-		1.0, -1.0, 1.0,   0.25, 0.25, 0.75,
-		1.0, -1.0, -1.0,  0.25, 0.25, 0.75,
-		1.0, 1.0, -1.0,   0.25, 0.25, 0.75,
+		1.0, 1.0, 1.0,    1, 1,
+		1.0, -1.0, 1.0,   0, 1,
+		1.0, -1.0, -1.0,  0, 0,
+		1.0, 1.0, -1.0,   1, 0,
 
 		// Front
-		1.0, 1.0, 1.0,    1.0, 0.0, 0.15,
-		1.0, -1.0, 1.0,    1.0, 0.0, 0.15,
-		-1.0, -1.0, 1.0,    1.0, 0.0, 0.15,
-		-1.0, 1.0, 1.0,    1.0, 0.0, 0.15,
+		1.0, 1.0, 1.0,    1, 1,
+		1.0, -1.0, 1.0,    1, 0,
+		-1.0, -1.0, 1.0,    0, 0,
+		-1.0, 1.0, 1.0,    0, 1,
 
 		// Back
-		1.0, 1.0, -1.0,    0.0, 1.0, 0.15,
-		1.0, -1.0, -1.0,    0.0, 1.0, 0.15,
-		-1.0, -1.0, -1.0,    0.0, 1.0, 0.15,
-		-1.0, 1.0, -1.0,    0.0, 1.0, 0.15,
+		1.0, 1.0, -1.0,    0, 0,
+		1.0, -1.0, -1.0,    0, 1,
+		-1.0, -1.0, -1.0,    1, 1,
+		-1.0, 1.0, -1.0,    1, 0,
 
 		// Bottom
-		-1.0, -1.0, -1.0,   0.5, 0.5, 1.0,
-		-1.0, -1.0, 1.0,    0.5, 0.5, 1.0,
-		1.0, -1.0, 1.0,     0.5, 0.5, 1.0,
-		1.0, -1.0, -1.0,    0.5, 0.5, 1.0,
+		-1.0, -1.0, -1.0,   1, 1,
+		-1.0, -1.0, 1.0,    1, 0,
+		1.0, -1.0, 1.0,     0, 0,
+		1.0, -1.0, -1.0,    0, 1,
     ];
 
     // index list, which sets of vertices form a triangle
@@ -196,7 +196,7 @@ InitDemo = () => {
 
     // get a handle to the attributes (in vertex shader)
     var positionAttribLocation = gl.getAttribLocation(program, 'vertPosition');
-    var colorAttribLocation = gl.getAttribLocation(program, 'vertColor');
+    var texCoordAttribLocation = gl.getAttribLocation(program, 'vertTexCoord');
 
     // specify the layout of the attributes
     gl.vertexAttribPointer(
@@ -204,22 +204,45 @@ InitDemo = () => {
         3, // Number of elements per attribute [JUST TAKES THE X+Y VERTICES]
         gl.FLOAT, // type of elements
         gl.FALSE,
-        6 * Float32Array.BYTES_PER_ELEMENT, // size of an individual vertex
+        5 * Float32Array.BYTES_PER_ELEMENT, // size of an individual vertex
         0, // offset from the beginning of a single vertex to this attribute
     );
 
     gl.vertexAttribPointer(
-        colorAttribLocation, // Attribute location
+        texCoordAttribLocation, // Attribute location
         3, // Number of elements per attribute
         gl.FLOAT, // type of elements
         gl.FALSE,
-        6 * Float32Array.BYTES_PER_ELEMENT, // size of an individual vertex
+        5 * Float32Array.BYTES_PER_ELEMENT, // size of an individual vertex
         3 * Float32Array.BYTES_PER_ELEMENT, // SKIPS THE X + Y VERTICES AND JUST USES THE RGBS
     );
 
     // enable attribute for use
     gl.enableVertexAttribArray(positionAttribLocation);
     gl.enableVertexAttribArray(colorAttribLocation);
+
+    //
+    // Create texture
+    //
+    // texture is also a buffer object on a graphics card, create similar way to vertex buffers
+    let boxTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, boxTexture);
+
+    // set texture parameters for wrapping and filtering [all done on texture but can be changed later
+    // on render loop]
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EGDE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EGDE);
+    // distant object
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    // close up object
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+    // add information
+
+
+
+    // unbind buffers after we load them in
+    gl.bindTexture(gl.TEXTURE_2D, null)
 
     // Tell OpenGL state machine which program should be active [specifiy which program to use]
     gl.useProgram(program);
