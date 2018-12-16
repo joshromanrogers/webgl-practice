@@ -7,16 +7,16 @@ var vertexShaderText =
 '',
 // incoming positions of vertices [inputs]
 'attribute vec3 vertPosition;',
-'attribute vec3 vertColor;',
+'attribute vec2 vertTexCoord;',
 // varyings = outputs [to the fragment shader]
-'varying vec3 fragColor;',
+'varying vec2 fragTexCoord;',
 'uniform mat4 mWorld;',
 'uniform mat4 mView;',
 'uniform mat4 mProj;',
 '',
 'void main()',
 '{',
-'   fragColor = vertColor;',
+'   fragTexCoord = vertTexCoord;',
 // transformations happen in reverse order, starting with vec4
 // matrix * position
 // position * rotating cube in 3d space * camera position * projection matrix
@@ -28,10 +28,14 @@ var fragmentShaderText =
 [
 'precision mediump float;',
 '',
-'varying vec3 fragColor;',
+'varying vec2 fragTexCoord;',
+// sample image [grabs info from texture 0 as it supplies information from the graphics card]
+'uniform sampler2D sampler;',
+'',
 'void main()',
 '{',
-'   gl_FragColor = vec4(fragColor, 1.0);',
+// grabs information from texture 2d [sampler] and grabs coordinates from fragTexCoord
+'   gl_FragColor = texture2D(sampler, fragTexCoord);',
 '}'
 ].join('\n');
 
